@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+set -e
+
+export SCRIPT_DIR=`dirname $0`
+
+# Includes
+. $SCRIPT_DIR/update_build_number
+. $SCRIPT_DIR/update_version
+. $SCRIPT_DIR/update_keychain
+
+GIT_COMMIT=`git rev-parse --short HEAD`
+GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+GIT_TAG=`git describe --tags --exact-match --match "v*" 2>/dev/null || echo ""`
+GIT_DIRTY=`test -n "$(git status --porcelain)" && echo true || echo false`
+GIT_LOG=`git log -1 --pretty=format:%s`
+
+silent=0
+
+say ()
+{
+    if [ "$silent" = 0 ];
+    then
+        if [ "$1" = "-n" ]
+        then
+            echo -n "$2"
+        else
+            echo "$1"
+        fi
+    fi
+}
+
+if [ "$CI_SERVER_NAME" = "GitLab CI" ];
+then
+    say "GitLab CI detected."
+    branch=$CI_BUILD_REF_NAME
+    build=$CI_BUILD_ID
+    commit=$CI_BUILD_REF
+    tag=${GIT_TAG:1}
+fi
+
+import_certs
+import_provisions
+
+if [ -n "$tag" ];
+then
+    say "Preparing for Beta Release $tag"
+
+    update_build_number $build
+    update_version $tag
+
+    make release-beta
+
+elif [ "$branch" = "master" ];
+then
+    say "Preparing for Alpha Release"
+
+    update_build_number $build
+
+    make release-alpha
+    ipa build -c Alpha
+
+else
+    say "Preparing for Development Release"
+
+    make test
+fi
+
+delete_provisions
+delete_keychain

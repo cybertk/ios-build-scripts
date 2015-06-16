@@ -1,0 +1,89 @@
+# The name of the keychain to create for iOS code signing.
+KEYCHAIN=ck-ios-build.keychain
+
+import_certs ()
+{
+    # If this environment variable is missing, we must not be running on Travis.
+    if [ -z "$KEY_PASSWORD" ]
+    then
+        echo "error: \$KEY_PASSWORD is not defined"
+        return 1
+    fi
+
+    echo "*** Setting up code signing..."
+    local password=cibuild
+
+    # Create a temporary keychain for code signing.
+    security create-keychain -p "$password" "$KEYCHAIN"
+    security default-keychain -s "$KEYCHAIN"
+    security unlock-keychain -p "$password" "$KEYCHAIN"
+    security set-keychain-settings -t 3600 -l "$KEYCHAIN"
+
+    # Download the certificate for the Apple Worldwide Developer Relations
+    # Certificate Authority.
+    local certpath="$SCRIPT_DIR/apple_wwdr.cer"
+    curl 'https://developer.apple.com/certificationauthority/AppleWWDRCA.cer' > "$certpath"
+    security import "$certpath" -k "$KEYCHAIN" -T /usr/bin/codesign
+
+    # Import our development certificate.
+    security import "$SCRIPT_DIR/certificates/development.p12" -k "$KEYCHAIN" -P "$KEY_PASSWORD" -T /usr/bin/codesign
+}
+
+import_provisions ()
+{
+    if [ -z "$SCRIPT_DIR" ]
+    then
+        echo "error: \$SCRIPT_DIR is not defined"
+        return 1
+    fi
+
+    if [ ! -d "$SCRIPT_DIR/provisions" ]
+    then
+        echo "error: $SCRIPT_DIR/provisions does not exist"
+        return 1
+    fi
+
+    cp $SCRIPT_DIR/provisions/* "$HOME/Library/MobileDevice/Provisioning Profiles/"
+}
+
+delete_provisions ()
+{
+    if [ -z "$SCRIPT_DIR" ]
+    then
+        echo "error: \$SCRIPT_DIR is not defined"
+        return 1
+    fi
+
+    if [ ! -d "$SCRIPT_DIR/provisions" ]
+    then
+        echo "error: $SCRIPT_DIR/provisions does not exist"
+        return 1
+    fi
+
+    local p
+    for p in $(ls $SCRIPT_DIR/provisions);
+    do
+        rm "$HOME/Library/MobileDevice/Provisioning Profiles/$p"
+    done
+}
+
+ls_provisions ()
+{
+    ls "$HOME/Library/MobileDevice/Provisioning Profiles"
+}
+
+delete_keychain ()
+{
+    if [ -z "$KEY_PASSWORD" ]
+    then
+        return 0
+    fi
+
+    security delete-keychain "$KEYCHAIN"
+}
+
+export -f import_certs
+export -f delete_keychain
+export -f import_provisions
+export -f delete_provisions
+
