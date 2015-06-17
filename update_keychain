@@ -49,7 +49,12 @@ import_provisions ()
         return 1
     fi
 
-    cp $SCRIPT_DIR/provisions/* "$HOME/Library/MobileDevice/Provisioning Profiles/"
+    local p
+    for p in $(ls $SCRIPT_DIR/provisions/*.mobileprovision);
+    do
+        cp "$p" "$HOME/Library/MobileDevice/Provisioning Profiles/"
+        echo "${p##*/} imported"
+    done
 }
 
 delete_provisions ()
