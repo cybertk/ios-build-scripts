@@ -23,8 +23,12 @@ Then commit the changes, to incorporate the scripts into your own repository's h
 
 To merge in upstream changes later:
 
-$ git fetch -p ios-build-scripts
-$ git merge --ff --squash -Xsubtree=script ios-build-scripts/master
+    make -C script
+
+or
+
+    $ git fetch -p ios-build-scripts
+    $ git merge --ff --squash -Xsubtree=script ios-build-scripts/master
 
 ## Provisions and Certificates
 
