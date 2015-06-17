@@ -74,7 +74,7 @@ delete_provisions ()
     fi
 
     local p
-    for p in $SCRIPT_DIR/provisions;
+    for p in $SCRIPT_DIR/provisions/*.mobileprovision;
     do
         rm "$HOME/Library/MobileDevice/Provisioning Profiles/${p##*/}"
     done
