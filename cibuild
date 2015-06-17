@@ -2,18 +2,24 @@
 
 set -e
 
-export SCRIPT_DIR=`dirname $0`
+SCRIPT_DIR=$(dirname "$0")
+export SCRIPT_DIR
 
 # Includes
-. $SCRIPT_DIR/update_build_number
-. $SCRIPT_DIR/update_version
-. $SCRIPT_DIR/update_keychain
+. "$SCRIPT_DIR/update_build_number"
+. "$SCRIPT_DIR/update_version"
+. "$SCRIPT_DIR/update_keychain"
 
-GIT_COMMIT=`git rev-parse --short HEAD`
-GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
-GIT_TAG=`git describe --tags --exact-match --match "v*" 2>/dev/null || echo ""`
-GIT_DIRTY=`test -n "$(git status --porcelain)" && echo true || echo false`
-GIT_LOG=`git log -1 --pretty=format:%s`
+GIT_COMMIT=$(git rev-parse --short HEAD)
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_TAG=$(git describe --GIT_TAGs --exact-match --match "v*" 2>/dev/null || echo "")
+GIT_DIRTY=$(test -n "$(git status --porcelain)" && echo true || echo false)
+GIT_LOG=$(git log -1 --pretty=format:%s)
+export GIT_COMMIT GIT_BRANCH GIT_TAG GIT_DIRTY GIT_LOG
+
+BUILD=
+VERSION=
+export BUILD VERSION
 
 silent=0
 
@@ -33,32 +39,31 @@ say ()
 if [ "$CI_SERVER_NAME" = "GitLab CI" ];
 then
     say "GitLab CI detected."
-    branch=$CI_BUILD_REF_NAME
-    build=$CI_BUILD_ID
-    commit=$CI_BUILD_REF
-    tag=${GIT_TAG:1}
+    GIT_BRANCH=$CI_BUILD_REF_NAME
+    GIT_COMMIT=$CI_BUILD_REF
+    VERSION=${GIT_TAG:1}
+    BUILD=$CI_BUILD_ID
 fi
 
 import_certs
 import_provisions
 
-if [ -n "$tag" ];
+if [ -n "$GIT_TAG" ];
 then
-    say "Preparing for Beta Release $tag"
+    say "Preparing for Beta Release $GIT_TAG"
 
-    update_build_number $build
-    update_version $tag
+    update_build_number "$BUILD"
+    update_version "$VERSION"
 
     make release-beta
 
-elif [ "$branch" = "master" ];
+elif [ "$GIT_BRANCH" = "master" ];
 then
     say "Preparing for Alpha Release"
 
-    update_build_number $build
+    update_build_number "$BUILD"
 
     make release-alpha
-    ipa build -c Alpha
 
 else
     say "Preparing for Development Release"

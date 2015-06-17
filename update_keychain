@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # The name of the keychain to create for iOS code signing.
 KEYCHAIN=ck-ios-build.keychain
 
@@ -12,7 +14,7 @@ import_certs ()
 
     if security show-keychain-info "$KEYCHAIN"  >/dev/null 2>&1
     then
-        echo "warnning: $KEYCHIAN already exist, force removed"
+        echo "warnning: $KEYCHAIN already exist, force removed"
         security delete-keychain "$KEYCHAIN"
     fi
 
@@ -50,7 +52,7 @@ import_provisions ()
     fi
 
     local p
-    for p in $(ls $SCRIPT_DIR/provisions/*.mobileprovision);
+    for p in $SCRIPT_DIR/provisions/*.mobileprovision;
     do
         cp "$p" "$HOME/Library/MobileDevice/Provisioning Profiles/"
         echo "${p##*/} imported"
@@ -72,9 +74,9 @@ delete_provisions ()
     fi
 
     local p
-    for p in $(ls $SCRIPT_DIR/provisions);
+    for p in $SCRIPT_DIR/provisions;
     do
-        rm "$HOME/Library/MobileDevice/Provisioning Profiles/$p"
+        rm "$HOME/Library/MobileDevice/Provisioning Profiles/${p##*/}"
     done
 }
 
