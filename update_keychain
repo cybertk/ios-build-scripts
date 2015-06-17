@@ -10,6 +10,12 @@ import_certs ()
         return 1
     fi
 
+    if security show-keychain-info "$KEYCHAIN"  >/dev/null 2>&1
+    then
+        echo "warnning: $KEYCHIAN already exist, force removed"
+        security delete-keychain "$KEYCHAIN"
+    fi
+
     echo "*** Setting up code signing..."
     local password=cibuild
 
