@@ -1,5 +1,7 @@
 # ios-build-scripts
 
+[![CI Status](http://img.shields.io/travis/cybertk/ios-build-scripts/master.svg?style=flat)](https://travis-ci.org/cybertk/ios-build-scripts)
+
 This project is a collection of scripts created with two goals:
 
 1. To standardize how iOS projects are bootstrapped after cloning
