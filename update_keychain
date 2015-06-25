@@ -12,6 +12,7 @@ import_certs ()
         return 1
     fi
 
+    local password=cibuild
     if security unlock-keychain -p "$password" "$KEYCHAIN"  >/dev/null 2>&1
     then
         echo "warnning: $KEYCHAIN already exist, force removed"
@@ -19,7 +20,6 @@ import_certs ()
     fi
 
     echo "*** Setting up code signing..."
-    local password=cibuild
 
     # Create a temporary keychain for code signing.
     security create-keychain -p "$password" "$KEYCHAIN"
