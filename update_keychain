@@ -12,7 +12,7 @@ import_certs ()
         return 1
     fi
 
-    if security show-keychain-info "$KEYCHAIN"  >/dev/null 2>&1
+    if security unlock-keychain -p "$password" "$KEYCHAIN"  >/dev/null 2>&1
     then
         echo "warnning: $KEYCHAIN already exist, force removed"
         security delete-keychain "$KEYCHAIN"
