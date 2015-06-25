@@ -33,3 +33,15 @@ or
 ## Provisions and Certificates
 
 **update_keychain** is used to manage Provisions and Certificates, put your certificates and `script/certificates/` dir and put provisions under `script/provisions/`
+
+## Run Commands in cibuild context
+
+You can run any command inside `cibuild` context
+
+    ./script/cibuild echo $GIT_COMMIT $GIT_BRANCH $BUILD
+
+## Source cibuild
+
+You can also source `cibuild` to get env/utility in current context with
+
+    . script/cibuild

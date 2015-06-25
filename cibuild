@@ -2,30 +2,17 @@
 
 set -e
 
-SCRIPT_DIR=$(dirname "$0")
-export SCRIPT_DIR
-
-# Includes
-. "$SCRIPT_DIR/update_build_number"
-. "$SCRIPT_DIR/update_version"
-. "$SCRIPT_DIR/update_keychain"
-
-GIT_COMMIT=$(git rev-parse --short HEAD)
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-GIT_TAG=$(git describe --GIT_TAGs --exact-match --match "v*" 2>/dev/null || echo "")
-GIT_DIRTY=$(test -n "$(git status --porcelain)" && echo true || echo false)
-GIT_LOG=$(git log -1 --pretty=format:%s)
-export GIT_COMMIT GIT_BRANCH GIT_TAG GIT_DIRTY GIT_LOG
-
-BUILD=
-VERSION=
-export BUILD VERSION
-
-silent=0
+include_funcs ()
+{
+    # Includes
+    . "$SCRIPT_DIR/update_build_number"
+    . "$SCRIPT_DIR/update_version"
+    . "$SCRIPT_DIR/update_keychain"
+}
 
 say ()
 {
-    if [ "$silent" = 0 ];
+    if [ "$SILENT" != 1 ];
     then
         if [ "$1" = "-n" ]
         then
@@ -36,40 +23,77 @@ say ()
     fi
 }
 
-if [ "$CI_SERVER_NAME" = "GitLab CI" ];
-then
-    say "GitLab CI detected."
-    GIT_BRANCH=$CI_BUILD_REF_NAME
-    GIT_COMMIT=$CI_BUILD_REF
-    VERSION=${GIT_TAG:1}
-    BUILD=$CI_BUILD_ID
-fi
+bootstrap_ci_env ()
+{
+    if [ "$CI_SERVER_NAME" = "GitLab CI" ];
+    then
+        say "GitLab CI detected."
+        GIT_BRANCH=$CI_BUILD_REF_NAME
+        GIT_COMMIT=$CI_BUILD_REF
+        VERSION=${GIT_TAG:1}
+        BUILD=$CI_BUILD_ID
+    fi
 
-import_certs
-import_provisions
+    # Fallback to default values
+    GIT_COMMIT=${GIT_COMMIT:-$(git rev-parse --short HEAD)}
+    GIT_BRANCH=${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
+    GIT_TAG=${GIT_TAG:-$(git describe --GIT_TAGs --exact-match --match "v*" 2>/dev/null || echo "")}
+    GIT_DIRTY=${GIT_DIRTY:-$(test -n "$(git status --porcelain)" && echo true || echo false)}
+    GIT_LOG=${GIT_LOG:-$(git log -1 --pretty=format:%s)}
+    BUILD=${BUILD:-local}
+    VERSION=${VERSION:-0.0.0}
 
-if [ -n "$GIT_TAG" ];
-then
-    say "Preparing for Beta Release $GIT_TAG"
+    export GIT_COMMIT GIT_BRANCH GIT_TAG GIT_DIRTY GIT_LOG BUILD VERSION
+}
 
-    update_build_number "$BUILD"
-    update_version "$VERSION"
+build_default ()
+{
+    import_certs
+    import_provisions
 
-    make release-beta
+    if [ -n "$GIT_TAG" ];
+    then
+        say "Preparing for Beta Release $GIT_TAG"
 
-elif [ "$GIT_BRANCH" = "master" ];
-then
-    say "Preparing for Alpha Release"
+        update_build_number "$BUILD"
+        update_version "$VERSION"
 
-    update_build_number "$BUILD"
+        make release-beta
 
-    make release-alpha
+    elif [ "$GIT_BRANCH" = "master" ];
+    then
+        say "Preparing for Alpha Release"
 
-else
-    say "Preparing for Development Release"
+        update_build_number "$BUILD"
 
-    make test
-fi
+        make release-alpha
 
-delete_provisions
-delete_keychain
+    else
+        say "Preparing for Development Release"
+
+        make test
+    fi
+
+    delete_provisions
+    delete_keychain
+}
+
+main () {
+    SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+    include_funcs
+    bootstrap_ci_env
+
+    if [ "${BASH_SOURCE[0]}" != "${0}" ];
+    then
+        say "*** CI build environment bootstraped"
+    elif [ "$#" -gt 0 ];
+    then
+        say "*** Running $*"
+        "$@"
+    else
+        build_default
+    fi
+}
+
+main "$@"
