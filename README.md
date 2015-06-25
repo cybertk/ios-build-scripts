@@ -9,6 +9,8 @@ This project is a collection of scripts created with two goals:
 
 ## Getting Started
 
+### Commit in repo
+
 To add the scripts to your project, read the contents of this repository into a script folder:
 
     bash <(curl -s https://cybertk.github.io/ios-build-scripts/bash)
@@ -29,6 +31,10 @@ or
 
     $ git fetch -p ios-build-scripts
     $ git merge --ff --squash -Xsubtree=script ios-build-scripts/master
+
+### git submodules
+
+    git submodule add https://github.com/cybertk/ios-build-scripts.git script
 
 ## Provisions and Certificates
 
