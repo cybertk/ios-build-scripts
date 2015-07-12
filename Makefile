@@ -1,7 +1,7 @@
 test: lint
 
 lint:
-	shellcheck cibuild update_build_number update_keychain update_version
+	shellcheck cibuild update_build_number update_version mobileprovision cert
 
 update:
 	git fetch -p ios-build-scripts

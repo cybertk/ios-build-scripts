@@ -2,14 +2,6 @@
 
 set -e
 
-include_funcs ()
-{
-    # Includes
-    . "$SCRIPT_DIR/update_build_number"
-    . "$SCRIPT_DIR/update_version"
-    . "$SCRIPT_DIR/update_keychain"
-}
-
 say ()
 {
     if [ "$SILENT" != 1 ];
@@ -57,8 +49,8 @@ bootstrap_ci_env ()
 
 build_default ()
 {
-    import_certs
-    import_provisions
+    cert --import
+    mobileprovision --import
 
     if [ -n "$GIT_TAG" ];
     then
@@ -83,14 +75,15 @@ build_default ()
         make test
     fi
 
-    delete_provisions
-    delete_keychain
+    cert --remove
+    mobileprovision --remove
 }
 
 main () {
     SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+    PATH=$SCRIPT_DIR:$PATH
+    export SCRIPT_DIR PATH
 
-    include_funcs
     bootstrap_ci_env
 
     if [ "${BASH_SOURCE[0]}" != "${0}" ];

@@ -37,54 +37,6 @@ import_certs ()
     security import "$SCRIPT_DIR/certificates/development.p12" -k "$KEYCHAIN" -P "$KEY_PASSWORD" -T /usr/bin/codesign
 }
 
-import_provisions ()
-{
-    if [ -z "$SCRIPT_DIR" ]
-    then
-        echo "error: \$SCRIPT_DIR is not defined"
-        return 1
-    fi
-
-    if [ ! -d "$SCRIPT_DIR/provisions" ]
-    then
-        echo "error: $SCRIPT_DIR/provisions does not exist"
-        return 1
-    fi
-
-    local p
-    for p in $SCRIPT_DIR/provisions/*.mobileprovision;
-    do
-        cp "$p" "$HOME/Library/MobileDevice/Provisioning Profiles/"
-        echo "${p##*/} imported"
-    done
-}
-
-delete_provisions ()
-{
-    if [ -z "$SCRIPT_DIR" ]
-    then
-        echo "error: \$SCRIPT_DIR is not defined"
-        return 1
-    fi
-
-    if [ ! -d "$SCRIPT_DIR/provisions" ]
-    then
-        echo "error: $SCRIPT_DIR/provisions does not exist"
-        return 1
-    fi
-
-    local p
-    for p in $SCRIPT_DIR/provisions/*.mobileprovision;
-    do
-        rm "$HOME/Library/MobileDevice/Provisioning Profiles/${p##*/}"
-    done
-}
-
-ls_provisions ()
-{
-    ls "$HOME/Library/MobileDevice/Provisioning Profiles"
-}
-
 delete_keychain ()
 {
     if [ -z "$KEY_PASSWORD" ]
@@ -95,8 +47,18 @@ delete_keychain ()
     security delete-keychain "$KEYCHAIN"
 }
 
-export -f import_certs
-export -f delete_keychain
-export -f import_provisions
-export -f delete_provisions
+main () {
+    case "$1" in
+        --import)
+            import_certs
+            ;;
+        --remove)
+            delete_keychain
+            ;;
+        *)
+            echo "Usage: cert <--import|--remove>"
+            ;;
+    esac
+}
 
+main "$@"
