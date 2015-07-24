@@ -17,9 +17,9 @@ To add the scripts to your project, read the contents of this repository into a 
 
 Which inactually executes following steps:
 
-    $ git remote add ios-build-scripts https://github.com/cybertk/ios-build-scripts.git
-    $ git fetch ios-build-scripts
-    $ git read-tree --prefix=script/ -u ios-build-scripts/master
+    git remote add ios-build-scripts https://github.com/cybertk/ios-build-scripts.git
+    git fetch ios-build-scripts
+    git read-tree --prefix=script/ -u ios-build-scripts/master
 
 Then commit the changes, to incorporate the scripts into your own repository's history. You can also freely tweak the scripts for your specific project's needs.
 
@@ -29,8 +29,8 @@ To merge in upstream changes later:
 
 or
 
-    $ git fetch -p ios-build-scripts
-    $ git merge --ff --squash -Xsubtree=script ios-build-scripts/master
+    git fetch -p ios-build-scripts
+    git merge --ff --squash -Xsubtree=script ios-build-scripts/master
 
 ### git submodules
 
