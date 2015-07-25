@@ -33,8 +33,12 @@ import_certs ()
     curl 'https://developer.apple.com/certificationauthority/AppleWWDRCA.cer' > "$certpath"
     security import "$certpath" -k "$KEYCHAIN" -T /usr/bin/codesign
 
-    # Import our development certificate.
-    security import "$SCRIPT_DIR/certificates/development.p12" -k "$KEYCHAIN" -P "$KEY_PASSWORD" -T /usr/bin/codesign
+    # Import certificates.
+    for c in $SCRIPT_DIR/certificates/*.p12;
+    do
+        [ "$c" = "$SCRIPT_DIR/certificates/*.p12" ] && break
+        security import "$c" -k "$KEYCHAIN" -P "$KEY_PASSWORD" -T /usr/bin/codesign
+    done
 }
 
 delete_keychain ()
