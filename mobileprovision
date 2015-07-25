@@ -17,6 +17,8 @@ import_provisions ()
     local p
     for p in $SCRIPT_DIR/provisions/*.mobileprovision;
     do
+        [ "$p" = "$SCRIPT_DIR/provisions/*.mobileprovision" ] && break
+
         cp "$p" "$HOME/Library/MobileDevice/Provisioning Profiles/"
         echo "${p##*/} imported"
     done
@@ -39,6 +41,8 @@ delete_provisions ()
     local p
     for p in $SCRIPT_DIR/provisions/*.mobileprovision;
     do
+        [ "$p" = "$SCRIPT_DIR/provisions/*.mobileprovision" ] && break
+
         rm "$HOME/Library/MobileDevice/Provisioning Profiles/${p##*/}"
     done
 }
