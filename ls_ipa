@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# List files in IPA by size
+
+set -e
+
+ls_ipa_by_size () {
+    ipa=$1
+
+    # Create temp working dir
+    WS=$(mktemp -t ck-ios-build-scripts)
+    [ -d "$WS" ] || rm -rf "$WS"
+    mkdir "$WS"
+
+    # Unzip ipa
+    unzip -q "$ipa" -d "$WS"
+
+    # Get it done
+    cd "$WS/Payload/"
+    find ./*.app -depth 1 -print0 | xargs -0 -I{} du -s {} | sort -rn | cut -f2 | xargs -I{} du -sh {}
+}
+
+main () {
+    if [ ! -f "$1" ];
+    then
+        echo "Usage: ls_ipa /path/to/ipa"
+        return
+    fi
+
+    ls_ipa_by_size "$1"
+}
+
+main "$@"
