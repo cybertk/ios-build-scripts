@@ -25,6 +25,18 @@ bootstrap_ci_env ()
         VERSION=${GIT_TAG:1}
         BUILD=$CI_BUILD_ID
 
+    elif [ "$JENKINS_URL" != "" ];
+    then
+        say "Jenkins CI detected."
+        # Jenkins GIT_BRANCH is like 'origin/master'
+        GIT_BRANCH=${GIT_BRANCH#*/}
+        GIT_COMMIT=$GIT_COMMIT
+        BUILD=$BUILD_NUMBER
+        VERSION=${GIT_TAG:1}
+        # $GIT_COMMIT and $GIT_BRANCH is exported by Jenkins
+        # https://wiki.jenkins-ci.org/display/JENKINS/Building+a+software+project
+        # https://wiki.jenkins-ci.org/display/JENKINS/GitHub+pull+request+builder+plugin#GitHubpullrequestbuilderplugin-EnvironmentVariables
+
     elif [ "$CI" = "true" ] && [ "$CIRCLECI" = "true" ];
     then
         say "Circle CI detected."
@@ -33,6 +45,8 @@ bootstrap_ci_env ()
         GIT_COMMIT=$CIRCLE_SHA1
         VERSION=${GIT_TAG:1}
         BUILD=$CIRCLE_BUILD_NUM
+    else
+        say "Unknown CI detected."
     fi
 
     # Fallback to default values
