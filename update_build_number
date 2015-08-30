@@ -3,6 +3,12 @@
 update_build_number() {
     local build=$1
 
+    if [ -z "$1" ]
+    then
+        echo "Bypassing update_build_number"
+        return
+    fi
+
     if ! echo "$build" | grep -q -E '^[0-9]+$'
     then
         echo "error: Invalid build number specified"
