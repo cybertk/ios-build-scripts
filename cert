@@ -26,19 +26,13 @@ import_certs ()
     curl 'https://developer.apple.com/certificationauthority/AppleWWDRCA.cer' > "$certpath"
     security import "$certpath" -k "$KEYCHAIN" -T /usr/bin/codesign
 
-    local security_opts=
-    if [ -z "$KEY_PASSWORD" ]
-    then
-        echo "warning: KEY_PASSOWRD is not defined"
-    else
-        security_opts="-P $KEY_PASSWORD"
-    fi
+    [ -z "$KEY_PASSWORD" ] && echo "warning: KEY_PASSOWRD is not defined"
 
     # Import certificates.
     for c in $SCRIPT_DIR/certificates/*.p12;
     do
         [ "$c" = "$SCRIPT_DIR/certificates/*.p12" ] && break
-        security import "$c" -k "$KEYCHAIN" "$security_opts" -T /usr/bin/codesign
+        security import "$c" -k "$KEYCHAIN" -P "$KEY_PASSWORD" -T /usr/bin/codesign
     done
 }
 
